@@ -13,8 +13,8 @@ public class BencodeDecoder {
 
     private final PushbackInputStream stream;
 
-    public static BencodeElement<?> decode(byte[] bytes) throws IOException {
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
+    public static BencodeElement<?> decode(byte[] data) throws IOException {
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
         BencodeDecoder decoder = new BencodeDecoder(byteStream);
         return decoder.decodeInternal();
     }
@@ -108,15 +108,15 @@ public class BencodeDecoder {
         }
 
         int length = Integer.parseInt(lengthBuffer.toString());
-        byte[] bytes = new byte[length];
+        byte[] data = new byte[length];
 
-        int readBytesCount = stream.readNBytes(bytes, 0, length);
+        int readBytesCount = stream.readNBytes(data, 0, length);
 
         if (readBytesCount != length) {
             throw new IOException("Unexpected EOF while reading string of length " + length);
         }
 
-        return new BencodeByteArray(bytes);
+        return new BencodeByteArray(data);
     }
 
     private BencodeList decodeList() throws IOException {
