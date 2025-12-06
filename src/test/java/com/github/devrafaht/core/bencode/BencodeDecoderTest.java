@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +59,14 @@ public class BencodeDecoderTest {
                 BencodeDecoder.decode(data);
             }, "Should fail because 'e' is missing");
         }
+
+        @Test
+        @DisplayName("Should encode integer back to bytes")
+        void shouldEncodeInteger() throws IOException {
+            BencodeNumber bencodeNumber = new BencodeNumber(42L);
+
+            assertArrayEquals("i42e".getBytes(), bencodeNumber.encode());
+        }
     }
 
     @Nested
@@ -95,6 +105,15 @@ public class BencodeDecoderTest {
                 BencodeDecoder.decode(data);
             });
         }
+
+        @Test
+        @DisplayName("Should encode string back to bytes")
+        void shouldEncodeString() throws IOException {
+            byte[] bytes = "hello".getBytes(StandardCharsets.UTF_8);
+            BencodeByteArray bencodeByteArray = new BencodeByteArray(bytes);
+
+            assertArrayEquals("5:hello".getBytes(), bencodeByteArray.encode());
+        }
     }
 
     @Nested
@@ -128,6 +147,18 @@ public class BencodeDecoderTest {
             List<BencodeElement<?>> list = ((BencodeList) result).getValue();
             assertTrue(list.isEmpty());
         }
+
+        @Test
+        @DisplayName("Should encode list back to bytes")
+        void shouldEncodeList() throws IOException {
+            List<BencodeElement<?>> list = new ArrayList<>();
+            list.add(new BencodeNumber(42L));
+            list.add(new BencodeByteArray("foo".getBytes()));
+
+            BencodeList bencodeList = new BencodeList(list);
+
+            assertArrayEquals("li42e3:fooe".getBytes(), bencodeList.encode());
+        }
     }
 
     @Nested
@@ -159,6 +190,18 @@ public class BencodeDecoderTest {
             });
 
             assertTrue(exception.getMessage().contains("Dictionary key is not a String"));
+        }
+
+        @Test
+        @DisplayName("Should encode dictionary back to bytes")
+        void shouldEncodeDictionary() throws IOException {
+            Map<String, BencodeElement<?>> map = new LinkedHashMap<>();
+            map.put("bar", new BencodeByteArray("spam".getBytes()));
+            map.put("foo", new BencodeNumber(42L));
+
+            BencodeDictionary bencodeDictionary = new BencodeDictionary(map);
+
+            assertArrayEquals("d3:bar4:spam3:fooi42ee".getBytes(), bencodeDictionary.encode());
         }
     }
 
